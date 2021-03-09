@@ -10,7 +10,7 @@ The [OATS Center at Purdue](https://oatscenter.org) has developed a framework fo
 
 # Hackathon
 ------------------
-The hackathon will end with a demo of as many end-to-end features as we can pack into the 3 days.  A base storyline for the target demo is:
+The hackathon will end with a demo of as many end-to-end features as we can pack into the 3 days.  Brainstorming and open innovation is obviously encouraged, however to provide some structure from which to build, a base storyline for the target demo is:
 1. **Farmer** contacts processor to schedule shipment.
 2. **Processor**'s app creates an Advance Ship Notice (ASN) JSON document in farmer's platform.
 3. **Farmer** or **Processor** adds **Trucker** to ASN once identified and booked.
