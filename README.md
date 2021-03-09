@@ -20,8 +20,8 @@ The hackathon will end with a demo of as many end-to-end features as we can pack
 4. **Farmer** and **Processor** add some form of proof (TBD) of Pork Quality Assurance and Transport Quality Assurance certification.
 5. Any additional info identified by hackathon participants can also be added to ASN from any integrated software platforms.
 6. When it's time to ship, the **Farmer** loads pigs on a truck. 
-    a. **Farmer** can text a chatbot provided by a hackathon partner to indicate load has left and # head.
-    b. or **Farmer** can use mobile web app to indicate load has left and # head.
+    1. **Farmer** can text a chatbot provided by a hackathon partner to indicate load has left and # head.
+    2. or **Farmer** can use mobile web app to indicate load has left and # head.
 6. **Trucker** uses mobile web app to update location mid-route, **Farmer** and **Processor** can monitor.
 7. **Trucker** uses mobile web app to indicate arrival in ASN.
 8. Pigs are unloaded from truck and counted.  **Processor** uses mobile app to record received head count in ASN.
