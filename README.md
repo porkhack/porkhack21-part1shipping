@@ -33,16 +33,17 @@ The hackathon will end with a demo of as many end-to-end features as we can pack
 ## Teams
 ------------------
 Participants can decide which teams should form in order to achieve the shared goal. As a suggestion, the outline above seems to have 4 types of teams based on tech stack/skill set:
-1: Web apps team (can have separate "farmer", "processor" and "trucker" teams if enough people)
+
+1: **Web apps team** (can have separate "farmer", "processor" and "trucker" teams if enough people)
 This team would create in-browser, open source web app(s), hostable via Github pages, to enable interaction with the ASN for the farmer, trucker, and processor.
 
-2: Chatbot team
+2: **Chatbot team**
 This team would focus on the text-message-based experience for the farmer to simplify day-of shipping activities.
 
-3: Certifications team
+3: **Certifications team**
 This team will focus on constructing appropriate means to privde PQA,TQA certifications and any other certifications that are available, ideally via OATS AGAPECert automated certifications framework.
 
-4: Integrations team
+4: **Integrations team**
 This team will focus on integrating any of this process with existing apps or services.  For example, if a company's existing UI can already make use of some form of shipping records, they could create a microservice to keep their internal api/database in sync with their customer's list of ASN's and then get a great chance to show their platform's features.
 
 
@@ -69,3 +70,35 @@ OADA does not tell you what data formats you need to use, it only requires that 
 
 Rather than provide an exhaustive narrative around learning all the features of OADA, we will instead just dive in tutorial-style to the basic setup for this hackathon.
 
+## Installation and Setup
+----------------------------
+If you want to run `oada` locally for development, you need `docker`, `docker-compose`, and a non-Windows OS (Mac or Linux) w/ `bash`.  Then do this:
+```shellsession
+# Get the deployment script
+mkdir oada && cd oada
+curl -OfsSL https://raw.githubusercontent.com/oada/oadadeploy/master/oadadeploy && chmod u+x oadadeploy
+# Install oada using defaults
+oadadeploy init -y
+source .oadadeploy/bash-completion
+# Tell oada to serve localhost
+oadadeploy domain add -y localhost
+```
+You can also deploy the same way in a cloud VM, however you'll need to use your own domain instead of `localhost` in the last command.
+
+Now in order to make requests against `oada`, you'll need a token, and to get a token you'll need a user:
+```shellsession
+# Add username bob on domain localhost as an admin (who can make other users)
+oadadeploy admin user add -u bob -p testpass1 -d localhost -a
+# Create a token w/ scope "all:all" (i.e. that can do anything bob can do
+oadadeploy admin token create -u bob -s all:all
+```
+
+Armed with your new token, you are ready to start making REST requests against OADA with a REST client like [Insomnia](https://insomnia.rest/).
+
+## Making API requests by hand
+--------------------------------
+
+< setup script for hackathon >
+
+## Making API requests in Javascript/Typescript
+------------------------------------------------
