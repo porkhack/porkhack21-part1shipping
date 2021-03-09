@@ -4,18 +4,12 @@ The goal of this hackathon series is to improve interoperabilty among systems in
 
 We are creating a standard, open source "integration" layer between systems.  In other words, the farmer has their own private data platform, the trucking company can have their own private data platform, and the processor can have their own private data platform, and the apps and other software that serve each.  
 
-```
-Creating, demonstrating, and publishing the API by which these systems communicate 
-is the main technical goal of the hackathon.
-```
+>**Creating, demonstrating, and publishing the API by which these systems communicate is the main technical goal of the hackathon.**
+
 
 The [OATS Center at Purdue](https://oatscenter.org) has developed a framework for building these integration layers over the last several years.  It goes by two names: the [Open Ag Data Alliance (OADA)](https://github.com/oada/oada-docs) and the [Trellis Framework](https://github.com/trellisfw).  OADA has become the name of the underlying tech stack and Trellis has come to represent the tooling, services, and apps built on top of OADA for connecting data across platform boundaries.  
 
-```
-This hackathon will assume that the farmer, trucking company, and 
-processor each have their own data platform, and those platforms 
-are all OADA-conformant.
-```
+>**This hackathon will assume that the farmer, trucking company, and processor each have their own data platform, and those platforms are all OADA-conformant.**
 
 # Hackathon
 ------------------
