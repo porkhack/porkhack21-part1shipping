@@ -81,7 +81,7 @@ The hackathon will take place in the virtual events platform [Remo.co](https://r
 
 Each team will elect a "speaker" who will be in charge of making a "pitch" presentation and reporting out during the hackathon on the team's activities and progress.  The organizers will be coming around to the tables to help identify areas of needed collaboration between teams, and to create 5-minute summaries of progress that the organizers will present live back at OATSCON21 throughout the event.
 
-# Introduction to OADA/Trellis
+# Introduction to OADA and Trellis
 ---------------------------------
 OADA is an API specification focused on data synchronization between platforms.  Any platform can be "OADA-conformant" if they implement that API specification alongside their existing API.  Any party in the pork supply chain can provide an OADA-conformant platform for any other party if needed.  OADA provides a reference implementation of that API spec which you can install and run (requires Docker) at (https://github.com/oada/oada-srvc-docker).  It is possible to build an OADA "facade" over top of an existing API in order to make it OADA-conformant.  However, since OADA is designed to facilitate caching and synchronization, and digital storage is very cheap, it is usually simplest to achieve OADA conformance by just installing the reference implementation and writing a single service to keep a cache of your internal data in sync with your OADA deployment's cache.  
 
@@ -97,7 +97,7 @@ Rather than provide an exhaustive narrative around learning all the features of 
 ## Installation and Setup
 ----------------------------
 If you want to run `oada` locally for development, you need `docker`, `docker-compose`, and a non-Windows OS (Mac or Linux) w/ `bash`.  Then do this:
-```shellsession
+```bash
 # Get the deployment script
 mkdir oada && cd oada
 curl -OfsSL https://raw.githubusercontent.com/oada/oadadeploy/master/oadadeploy && chmod u+x oadadeploy
@@ -110,7 +110,7 @@ oadadeploy domain add -y localhost
 You can also deploy the same way in a cloud VM, however you'll need to use your own domain instead of `localhost` in the last command.
 
 Now in order to make requests against `oada`, you'll need a token, and to get a token you'll need a user:
-```shellsession
+```bash
 # Add username bob on domain localhost as an admin (who can make other users)
 oadadeploy admin user add -u bob -p testpass1 -d localhost -a
 # Create a token w/ scope "all:all" (i.e. that can do anything bob can do
