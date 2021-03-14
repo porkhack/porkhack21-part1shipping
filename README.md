@@ -138,8 +138,50 @@ Armed with your new token, you are ready to start making REST requests against O
 
 ## Making API requests by hand
 --------------------------------
+### GET /bookmarks
+In OADA, URL's act sort of like a filesystem of resources rooted at path `/bookmarks`.  Each user has their own bookmarks, and the token you pass determines which user your request is referencing.  Send a different user's token and you'll get a different `/bookmarks` resource.
 
-< setup script for hackathon >
+After install, your bookmarks is "empty":
+```http
+GET /bookmarks
+Host: localhost
+Authorization: Bearer <token>
+```
+Response:
+```json
+{
+  "_id": "resources/default:resources_bookmarks_321",
+  "_rev": 1,
+  "_type": "application/vnd.oada.bookmarks.1+json",
+  "_meta": {
+    "_id": "resources/default:resources_bookmarks_321/_meta",
+    "_rev": 1
+  }
+}
+```
+That tells you the bookmarks resource is JSON, it is of `content-type` `application/vnd.oada.bookmarks.1+json`, and it has a `_meta` document (i.e. another JSON document storing arbitrary data _about_ the resource.  It has a "canonical" id of `resources/default:resources_bookmarks_321`.  Also, it is currently on its first revision `_rev: 1`.
+
+### Setup the Advance Ship Notice base API
+We provide a script to initialize your installation to support the proposed ASN API.  This basically means creating the "tree" of resources that would map to the URL `/bookmarks/trellisfw/asns`.  i.e. `/bookmarks` will be a resource with a `trellisfw` key, and `/bookmarks/trellisfw` will be a resource with an `asns` key.
+
+To run the script, you can either use `npx` (i.e. node) or `docker`:
+```bash
+# To setup your ASN tree with node:
+npx @pork/porkhack setup
+# Or, to setup your ASN tree with docker:
+docker run --rm porkhack/part1 porkhack setup
+```
+
+### Look at /bookmarks again after setup
+```http
+GET /bookmarks
+Host: localhost
+Authorization: Bearer <token>
+```
+Response:
+```
+```
+
 
 ## Making API requests in Javascript/Typescript
 ------------------------------------------------
