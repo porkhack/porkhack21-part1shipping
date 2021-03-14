@@ -179,7 +179,79 @@ Host: localhost
 Authorization: Bearer <token>
 ```
 Response:
+```json
+{
+  "_id": "resources/default:resources_bookmarks_321",
+  "_rev": 2,
+  "_type": "application/vnd.oada.bookmarks.1+json",
+  "_meta": {
+    "_id": "resources/default:resources_bookmarks_321/_meta",
+    "_rev": 2
+  },
+  "trellisfw": {
+    "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx"
+  }
+}
 ```
+That `trellisfw` key is an object with a key inside named `_id`.  This means it is a **link to another resource**, specifically to the resource with id `resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx` in this case.  To follow a link, just append the link key to the URL:
+```http
+GET /bookmarks/trellisfw
+Host: localhost
+Authorization: Bearer <token>
+```
+Response:
+```json
+{
+  "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx",
+  "_rev": 1,
+  "_type": "application/vnd.trellisfw.1+json",
+  "_meta": {
+    "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx/_meta",
+    "_rev": 1
+  },
+  "asns": {
+    "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG"
+  }
+}
+```
+Because `trellisfw` was a link, `/bookmarks/trellisfw` returned the linked resource instead of the bookmarks resource.  You can see that there is another key at this level named "asns".  If you get that, you'll see it is empty (because we haven't added any ASN's yet).
+```http
+GET /bookmarks/trellisfw/asns
+Host: localhost
+Authorization: Bearer <token>
+```
+Response:
+```
+{
+  "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG",
+  "_rev": 7,
+  "_type": "application/vnd.trellisfw.asns.1+json",
+  "_meta": {
+    "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG/_meta",
+    "_rev": 7
+  }
+}
+```
+### Add a dummy ASN
+The setup script allows you to generate dummy asn's for your installation:
+```bash
+# To add an ASN using npx (i.e. node):
+npx @pork/porkhack setup addEmptyASN
+# To add an ASN using docker
+docker run --rm porkhack/part1 setup addEmptyASN
+```
+This effectively does the following request (ignore that the parent resources don't all exist yet):
+```http
+POST /bookmarks/trellisfw/asns/day-index/<today>
+Host: localhost
+Content-Type: 'application/vnd.trellisfw.asn.porkhack.1+json'
+Authorization: Bearer <token>
+
+{
+  "shipdate": {
+    "scheduled": "2021-03-13T12:35:00Z,
+  },
+}
 ```
 
 
