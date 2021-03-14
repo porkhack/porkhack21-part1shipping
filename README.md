@@ -4,7 +4,7 @@
 ---------------------------------------------------------
 
 1. [Overview](#overview)  
-1. [Hackathon](#hackathon)
+1. [Hackathon](#hackathon-demo)
     1. [Teams](#teams)
     2. [Contingency Planning](#contingency-planning)
     3. [Hackathon Setup and Logistics](#hackathon-setup-and-logistics)  
@@ -27,7 +27,7 @@ The [OATS Center at Purdue](https://oatscenter.org) has developed a framework fo
 
 Because it is open source and easily installable, anyone, including any participant company in the hackathon, can offer an OADA-conformant platform as a service for their customers.
 
-# Hackathon
+# Hackathon Final Demo
 ------------------
 The hackathon will end with a demo of as many end-to-end features as we can pack into the 3 days.  Brainstorming and open innovation is strongly encouraged, however to provide some structure upon which to build, a base storyline for the target demo is:
 
@@ -69,9 +69,22 @@ This team will focus on integrating any of this process with existing apps or se
 ## Contingency Planning
 ------------------------------
 In order to maximize team independence and modularity, it is critical that the Shaing and Sync Team's work not hinder any of the other team's work.  Trellis has a convenient means of achieving this which allows us to have a Plan A (everything works as planned) and a Plan B (some things don't work) and Plan C (only one thing works).  In essence, all apps and services (except the sharing service) will see the same API regardless of which platform and which user they are operating as.  This will manifest itself as follows:
-![Plan A](./docs/img/PlanA.png)
-![Plan B](./docs/img/PlanB.png)
+
 ![Plan C](./docs/img/PlanC.png)
+Plan C is the simplest of all the plans.  Just write any app/service using the standardized ASN API and have them all use the same user/token.  If the sharing team isn't done yet, or they don't get done, this works regardless because everybody is editing the same docs as the same user.
+
+![Plan B](./docs/img/PlanB.png)
+Plan B adds an indexer so that only a subset of the Farmer's ASN's are shared with separate users on his/her platform.  The Hauler and the Processor will have a user on the farmer's platform, and the farmer's internal indexer will handle only sharing ASN's with the hauler and processor that they should be allowed to see.  The sharing is done as an internal link, meaning that all the users are editing the same underlying resource, but the farmer can now have ASN's for different haulers and processors that remain private.
+
+From a coding perspective, this just means the apps from Plan C need to use different tokens, but they still work the same.
+
+![Plan A](./docs/img/PlanA.png)
+Plan A is the primary goal.  The hauler and processor will run their own 2-way sync services that will maintain consistency between the ASN copies on all the respective platforms.  The Hauler's app(s) will interact only with the ASN copy on the hauler's platform, the Processor's app(s) will interact only with the ASN copy on the processor's platform, and the farmer's app(s) will interact only with the copy on the farmer's platform.  
+
+The Hauler will have a user on the farmer's platform and a user on their own platform (and similarly for the processor).  The 2-way syncer will use a separate token for each in order to keep both copies of the ASN in sync.
+
+From a coding perspective for all the other teams, this just means the apps from Plan B will need to change the domain they use.
+
 
 ## Hackathon Setup and Logistics
 ------------------
