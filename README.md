@@ -96,7 +96,7 @@ The hackathon will take place in the virtual events platform [Remo.co](https://r
 
 ![Remo floor](./docs/img/remo_floor.png)
 
-Each team will elect a "speaker" who will be in charge of making a "pitch" presentation and reporting out during the hackathon on the team's activities and progress.  The organizers will be coming around to the tables to help identify areas of needed collaboration between teams, and to create 5-minute summaries of progress that the organizers will present live back at OATSCON21 throughout the event.
+**Each team will elect a "speaker" who will be in charge of making a "pitch" presentation and reporting out during the hackathon on the team's activities and progress.**  The organizers will be coming around to the tables to help identify areas of needed collaboration between teams, and to create 5-minute summaries of progress that the organizers will present live back at OATSCON21 throughout the event.
 
 # Introduction to OADA and Trellis
 ---------------------------------
