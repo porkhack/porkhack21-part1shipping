@@ -4,7 +4,7 @@
 ---------------------------------------------------------
 
 1. [Overview](#overview)  
-1. [Hackathon](#hackathon-demo)
+1. [Hackathon](#hackathon-final-demo)
     1. [Teams](#teams)
     2. [Contingency Planning](#contingency-planning)
     3. [Hackathon Setup and Logistics](#hackathon-setup-and-logistics)  
