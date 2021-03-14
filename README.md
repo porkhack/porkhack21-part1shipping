@@ -1,3 +1,5 @@
+![PorkHack21 - Part 1: Shipping](./docs/img/porkhack-logo-landscape-large.png)
+
 # The Great 2021 Pork Hackathon Series - Part 1: Shipping
 ---------------------------------------------------------
 
@@ -67,7 +69,9 @@ This team will focus on integrating any of this process with existing apps or se
 ## Contingency Planning
 ------------------------------
 In order to maximize team independence and modularity, it is critical that the Shaing and Sync Team's work not hinder any of the other team's work.  Trellis has a convenient means of achieving this which allows us to have a Plan A (everything works as planned) and a Plan B (some things don't work) and Plan C (only one thing works).  In essence, all apps and services (except the sharing service) will see the same API regardless of which platform and which user they are operating as.  This will manifest itself as follows:
-1. 
+![Plan A](./docs/img/PlanA.png)
+![Plan B](./docs/img/PlanB.png)
+![Plan C](./docs/img/PlanC.png)
 
 ## Hackathon Setup and Logistics
 ------------------
