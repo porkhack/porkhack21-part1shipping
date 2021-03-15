@@ -11,6 +11,7 @@
 1. [Introduction to OADA and Trellis](#introduction-to-oada-and-trellis)
     1. [Installation and Setup](#installation-and-setup)
     2. [Making API Requests By Hand](#making-api-requests-by-hand)
+    3. [OADA Javascript Helper Libraries](#oada-javascript-helper-libraries)
 
 
 # Overview
