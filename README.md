@@ -10,7 +10,7 @@
     3. [Hackathon Setup and Logistics](#hackathon-setup-and-logistics)  
 1. [Introduction to OADA and Trellis](#introduction-to-oada-and-trellis)
     1. [Installation and Setup](#installation-and-setup)
-    2. [Making API Requests By HAnd](#making-api-requests-by-hand)
+    2. [Making API Requests By Hand](#making-api-requests-by-hand)
 
 
 # Overview
