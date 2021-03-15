@@ -10,6 +10,7 @@
     3. [Hackathon Setup and Logistics](#hackathon-setup-and-logistics)  
 1. [Introduction to OADA and Trellis](#introduction-to-oada-and-trellis)
     1. [Installation and Setup](#installation-and-setup)
+    2. [Making API Requests By HAnd](#making-api-requests-by-hand)
 
 
 # Overview
@@ -162,97 +163,67 @@ Response:
 That tells you the bookmarks resource is JSON, it is of `content-type` `application/vnd.oada.bookmarks.1+json`, and it has a `_meta` document (i.e. another JSON document storing arbitrary data _about_ the resource).  The resource at `/bookmarks` has a "canonical" id of `resources/default:resources_bookmarks_321`.  Also, it is currently on its first revision `_rev: 1`.
 
 ### Setup the Advance Ship Notice base API
-We provide a script to initialize your installation to support the proposed ASN API.  This basically means creating the "tree" of resources that would map to the URL `/bookmarks/trellisfw/asns`.  i.e. `/bookmarks` will be a resource with a `trellisfw` key, and `/bookmarks/trellisfw` will be a resource with an `asns` key.
+We will provide a script to initialize your installation to support the proposed ASN API at the start of the hackathon.  However, for the puposes of helping understand how the API works, we will build it by hand in this section.
 
-To run the script, you can either use `npx` (i.e. node) or `docker`:
-```bash
-# To setup your ASN tree with node:
-npx @pork/porkhack setup
-# Or, to setup your ASN tree with docker:
-docker run --rm porkhack/part1 porkhack setup
+This basically means we are creating the "tree" of resources that would map to the URL `/bookmarks/trellisfw/asns`.  i.e. `/bookmarks` will be a resource with a `trellisfw` key, and `/bookmarks/trellisfw` will be a resource with an `asns` key.
+
+We'll start at the bottom: let's make a resource to hold the ASN's (note the `Content-Type` we're using):
+
+```http
+POST /resources
+Host: localhost
+Content-Type: "application/vnd.trellisfw.asns.1+json"
+Authorization: Bearer <token>
+
+{}
+```
+Response (headers only, no body):
+```http
+Status: 200 Ok
+Content-Location: "/resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE"
 ```
 
-### Look at /bookmarks again after setup
+We now have an empty resource with `_id` `resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE` (i.e. the content-location with the leading `/` removed).  For those who are interested, the part after `resources/` is a K-Sortable Universally Unique Id (`ksuid`: (https://github.com/segmentio/ksuid) ).  It's an extremely handy way of generating random id's: the first half of it is the current timestamp, and the second half is a random string that ensures uniqueness.  If you have a list of ksuids, you can sort them by creation tiem.
+
+Next, we need to make a resource for the `trellisfw` part of the `/bookmarks/trellisfw/asns` URL, and the body of that will contain an `asns` key which links to our new resource.
 ```http
-GET /bookmarks
+POST /resources
 Host: localhost
-Authorization: Bearer <token>
-```
-Response:
-```json
-{
-  "_id": "resources/default:resources_bookmarks_321",
-  "_rev": 2,
-  "_type": "application/vnd.oada.bookmarks.1+json",
-  "_meta": {
-    "_id": "resources/default:resources_bookmarks_321/_meta",
-    "_rev": 2
-  },
-  "trellisfw": {
-    "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx"
-  }
-}
-```
-That `trellisfw` key is an object with a key inside named `_id`.  This means it is a **link to another resource**, specifically to the resource with id `resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx` in this case.  To follow a link, just append the link key to the URL:
-```http
-GET /bookmarks/trellisfw
-Host: localhost
-Authorization: Bearer <token>
-```
-Response:
-```json
-{
-  "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx",
-  "_rev": 1,
-  "_type": "application/vnd.trellisfw.1+json",
-  "_meta": {
-    "_id": "resources/1pjU8n3Dg0Jel4i7gsqsZNppbwx/_meta",
-    "_rev": 1
-  },
-  "asns": {
-    "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG"
-  }
-}
-```
-Because `trellisfw` was a link, `/bookmarks/trellisfw` returned the linked resource instead of the bookmarks resource.  You can see that there is another key at this level named "asns".  If you get that, you'll see it is empty (because we haven't added any ASN's yet).
-```http
-GET /bookmarks/trellisfw/asns
-Host: localhost
-Authorization: Bearer <token>
-```
-Response:
-```
-{
-  "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG",
-  "_rev": 7,
-  "_type": "application/vnd.trellisfw.asns.1+json",
-  "_meta": {
-    "_id": "resources/1pjU8ZlVltBIE51lEGyQY7pT8mG/_meta",
-    "_rev": 7
-  }
-}
-```
-### Add a dummy ASN
-The setup script allows you to generate dummy asn's for your installation:
-```bash
-# To add an ASN using npx (i.e. node):
-npx @pork/porkhack setup addEmptyASN
-# To add an ASN using docker
-docker run --rm porkhack/part1 setup addEmptyASN
-```
-This effectively does the following request (ignore that the parent resources don't all exist yet):
-```http
-POST /bookmarks/trellisfw/asns/day-index/<today>
-Host: localhost
-Content-Type: 'application/vnd.trellisfw.asn.porkhack.1+json'
+Content-Type: "application/vnd.trellisfw.1+json"
 Authorization: Bearer <token>
 
 {
-  "shipdate": {
-    "scheduled": "2021-03-13T12:35:00Z,
-  },
+  "asns": { "_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE" }
 }
 ```
+Response (headers only, no body):
+```http
+Status: 200 Ok
+Content-Location: "/resources/1pnoUVMJ7nsQpdmb91CcIG781sv"
+```
+
+Now, we have a resource containing an `asns` key which links to our `asns` resource.  A "link" is just an object that looks like a "compressed" resource: i.e. it just has an `_id` key.
+
+Finally, let's link the trellisfw resource into bookmarks to complete the setup.  We're going to switch from POST to PUT. All writes to OADA **deep merge** the "body" of the request into the existing resource, and increment the `_rev` on the resource.  In fact, a POST is actually just a PUT that appends a `ksuid` on the end of the URL.
+```http
+PUT /bookmarks
+Host: localhost
+Content-Type: "application/vnd.oada.bookmarks.1+json"
+Authorization: Bearer <token>
+
+{
+  "trellisfw": { "_id": "resources/1pnoUVMJ7nsQpdmb91CcIG781sv" }
+}
+```
+
+That's it!  Now we have an API for ASN's all set and ready to roll, and we know how to read, write, and link together resources.  If you do a `GET /bookmarks/trellisfw/asns`, now you'll get the empty resource that will hold the ASN's.
+
+### Streaming Live Changes
+
+The real power of Trellis comes in its ability to stream an ordered change feed from an arbitrary sub-tree of resources to any destination you want.  If you have a microservice or app, just set a watch on a resource via websockets.  If you want to async trigger an external REST service or serverless functions, simply set a webhook on a resource and it will call your API whenever the resource changes.
+
+To see how this looks, 
+
 
 
 ## Making API requests in Javascript/Typescript
