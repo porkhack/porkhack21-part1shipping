@@ -51,7 +51,7 @@ Step | Nickname | Actors | Description
 
 ## Teams
 ------------------
-Participants can decide which teams should form in order to achieve the shared goal. As a suggestion, the outline above seems to have 4 types of teams based on tech stack/skill set:
+Participants can decide which teams should form in order to achieve the shared goal. As a suggestion, the outline above seems to have 5 types of teams based on tech stack/skill set:
 
 1: **Web Apps Team** (can have separate "farmer", "processor" and "trucker" teams if enough people)
 This team would create in-browser, open source web app(s), hostable via Github pages, to enable interaction with the ASN for the farmer, trucker, and processor.
@@ -248,11 +248,13 @@ const tree = {
         day-index: {
           '*': {
             _type: "application/vnd.trellisfw.asns.1+json",
+            _rev: 0,
             '*': {
-              _type: "application/vnd.trellisfw.asn.porkhack.1+json"
+              _type: "application/vnd.trellisfw.asn.porkhack.1+json",
+              _rev: 0
 } } } } } } };
 ```
-Note that every level is its own resource (i.e. has an `_type`) except `day-index`.  This means that when you GET `/bookmarks/trellisfw/asns`, the response will include every day that you have an ASN with a `shipdate` of that day.  Also, the `'*'` means that it will use the same types for each day.  The bottom level is the actual ASN's, for those we'll use `_type` `application/vnd.trellisfw.asn.porkhack.1+json`.
+Note that every level is its own resource (i.e. has an `_type`) except `day-index`.  This means that when you GET `/bookmarks/trellisfw/asns`, the response will include every day that you have an ASN with a `shipdate` of that day.  Also, the `'*'` means that it will use the same types for each day.  The bottom level is the actual ASN's, for those we'll use `_type` `application/vnd.trellisfw.asn.porkhack.1+json`.  We'll get into why the `_rev: 0` is in there when we discuss live streaming change feeds below.  For now, just make sure it's there.
 
 Now, you'll want to `npm install @oada/client` and we can go ahead and POST our dummy ASN all in one go and it will ensure the path exists (assuming you have your domain, token, and that tree in variables):
 ```
@@ -260,22 +262,28 @@ import { connnect } from '@oada/client'
 
 (async () => {
   const oada = await oada.connect({domain,token});
-  await oada.post({ 
+  const { headers } = await oada.post({ 
     path: "/bookmarks/trellisfw/asns/day-index/2021-03-15"
-    data: { shipdate: "2021-03-15" }
+    data: { shipdate: "2021-03-15" }, // This is the ASN
     tree
   });
+  // The last part of the URL (after the last "/") is the new key that was created on the POST:
+  // /resources/abc123/def456 => def456 is the newly posted key
+  const new_key = headers['content-location'].replace(/^.*\/(.*)/, '$1');
+  console.log(`Created new ASN at /bookmarks/trellisfw/asns/day-index/2021-03-15/${new_key}`);
   await oada.disconnect();
 })()
+```
 
+And voila!  Now you have an ASN in your list, feel free to go look around your new API tree.
 
 ### Streaming Live Changes
 
 The real power of Trellis comes in its ability to stream an ordered change feed from an arbitrary sub-tree of resources to any destination you want.  If you have a microservice or app, just set a watch on a resource via websockets.  If you want to async trigger an external REST service or serverless functions, simply set a webhook on a resource and it will call your API whenever the resource changes.
 
-To see how this works, first we can just look at what a `change` is.  To access the change which created a (i.e. turned it into `_rev` 1), you would GET `_meta/_changes/1`.  We can see this for our `asns` resource above with the following:
+To see how this works, first we can just look at what a `change` is.  To access the change which created a (i.e. turned it into `_rev` 1), you would GET `_meta/_changes/1`.  We can see this for our new asn above with the following:
 ```http
-GET /bookmarks/trellisfw/asns/_meta/_changes/1
+GET /bookmarks/trellisfw/asns/day-index/2021-03-15/<new_key>/_meta/_changes/1
 Host: localhost
 Authorization: Bearer <token>
 ```
