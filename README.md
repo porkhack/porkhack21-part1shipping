@@ -11,7 +11,12 @@
 1. [Introduction to OADA and Trellis](#introduction-to-oada-and-trellis)
     1. [Installation and Setup](#installation-and-setup)
     2. [Using the ASN API](#using-the-asn-api)
-    3. [OADA Javascript Helper Libraries](#oada-javascript-helper-libraries)
+    3. [Get /bookmarks](#get-bookmarks)
+    5. [Setup the Advance Ship Notice Base API](#setup-the-advance-ship-notice-base-api)
+    6. [Create an ASN](#create-an-asn)
+    7. [Change Trees and Versioned Links](#change-trees-and-versioned-links)
+    8. [Watching for Changes](#watching-for-changes)
+1. [What We Are Really Making](#what-we-are-really-making)
 
 
 # Overview
@@ -435,6 +440,7 @@ const requestId = await oada.watch({
     console.log(d); // This runs on every change
   },
 })
+```
 To unwatch a resource, use the unwatch request with the returned `requestId` above:
 ```javascript
 const response = await oada.unwatch(requestId);
