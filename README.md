@@ -164,7 +164,9 @@ Response:
 That tells you the bookmarks resource is JSON, it is of `content-type` `application/vnd.oada.bookmarks.1+json`, and it has a `_meta` document (i.e. another JSON document storing arbitrary data _about_ the resource).  The resource at `/bookmarks` has a "canonical" id of `resources/default:resources_bookmarks_321`.  Also, it is currently on its first revision `_rev: 1`.
 
 ### Setup the Advance Ship Notice base API
-We will provide a script to initialize your installation to support the proposed ASN API at the start of the hackathon.  However, for the puposes of helping understand how the API works, we will build it by hand in this section.
+**Please note that this API is not set in stone and may not be the final API from the hackathon.**
+
+We will provide a script to initialize your installation to support the proposed ASN API at the start of the hackathon.  However, for the purposes of helping understand how the API works, we will build it by hand in this section.  
 
 This basically means we are creating the "tree" of resources that would map to the URL `/bookmarks/trellisfw/asns`.  i.e. `/bookmarks` will be a resource with a `trellisfw` key, and `/bookmarks/trellisfw` will be a resource with an `asns` key.
 
@@ -184,9 +186,9 @@ Status: 200 Ok
 Content-Location: "/resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE"
 ```
 
-We now have an empty resource with `_id` `resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE` (i.e. the content-location with the leading `/` removed).  For those who are interested, the part after `resources/` is a K-Sortable Universally Unique Id (`ksuid`: (https://github.com/segmentio/ksuid) ).  It's an extremely handy way of generating random id's: the first half of it is the current timestamp, and the second half is a random string that ensures uniqueness.  If you have a list of ksuids, you can sort them by creation tiem.
+We now have an empty resource with `_id` `resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE` (i.e. the content-location with the leading `/` removed).  For those who are interested, the part after `resources/` is a K-Sortable Universally Unique Id [`ksuid`](https://github.com/segmentio/ksuid).  It's an extremely handy way of generating random id's: the first half of it is the current timestamp, and the second half is a random string that ensures uniqueness.  If you have a list of ksuids, you can sort them lexically which will sort them by creation time.  Any time a random string is generated in OADA (i.e. on a POST), it is a `ksuid`.
 
-Next, we need to make a resource for the `trellisfw` part of the `/bookmarks/trellisfw/asns` URL, and the body of that will contain an `asns` key which links to our new resource.
+Next, we need to make a resource for the `trellisfw` part of the `/bookmarks/trellisfw/asns` URL, and the body of that will contain an `asns` key which links to our new resource.  **A `link` in OADA is just an object with an `_id` key**.  
 ```http
 POST /resources
 Host: localhost
@@ -203,9 +205,9 @@ Status: 200 Ok
 Content-Location: "/resources/1pnoUVMJ7nsQpdmb91CcIG781sv"
 ```
 
-Now, we have a resource containing an `asns` key which links to our `asns` resource.  A "link" is just an object that looks like a "compressed" resource: i.e. it just has an `_id` key.
+Now, we have a resource containing an `asns` key which links to our `asns` resource.  This means that you can append the key to the end of a URL that ends at this resource, and OADA will take you to the linked resource.  i.e. `/resources/1pnoUVMJ7nsQpdmb91CcIG781sv/asns` will go to the first resource we created.  **You can append any keys in a resource to the URL (nested keys joined with `/`) and get the value at that key.**. 
 
-Finally, let's link the trellisfw resource into bookmarks to complete the setup.  We're going to switch from POST to PUT. All writes to OADA **deep merge** the "body" of the request into the existing resource, and increment the `_rev` on the resource.  In fact, a POST is actually just a PUT that appends a `ksuid` on the end of the URL.
+Finally, let's link the trellisfw resource into bookmarks to complete the setup.  We're going to switch from POST to PUT. **All writes to OADA deep merge the "body" of the request into the existing resource,** and increment the `_rev` on the resource.  In fact, a POST is actually just a PUT that appends a `ksuid` on the end of the URL.
 ```http
 PUT /bookmarks
 Host: localhost
@@ -219,11 +221,92 @@ Authorization: Bearer <token>
 
 That's it!  Now we have an API for ASN's all set and ready to roll, and we know how to read, write, and link together resources.  If you do a `GET /bookmarks/trellisfw/asns`, now you'll get the empty resource that will hold the ASN's.
 
+### Create an ASN
+
+For this tutorial, we'll assume an ASN looks like this for simplicity (obviously the real ASN's will have all kinds of other information):
+```json
+{
+  "shipdate": "2021-03-15"
+}
+```
+
+We would like to POST this ASN to our `/bookmarks/trellisfw/asns` list.  However, if we put all our ASN's into this same resource, over time it is going to become very large.  Therefore, we often choose a _canonical indexing_ structure to group things in a list.  Additional indexes can be created, but the canonical one is assured to be the place you always write the initial link.
+
+The natural indexing for ASN's is by ship date.  Therefore, let's create a `day-index` bucket to put this ASN into.  Our final URL where we will POST this ASN will be: `/bookmark/trellisfw/asns/day-index/2021-03-15`.  We'll need to create this resource which means we need to know a content type with which to create the resource.  By convention, the content-type of any index resource is the same as the original list (`application/vnd.trellisfw.asns.1+json`).  This is because an index is also a list, just a subset of the original list.  
+
+You can create this by hand, or we have a convenient Javascript library that can simplify this. Executing the calls to build API trees like this has a tricky concurrency gotcha: this is handled in the `@oada/client` library.  Not to mention, it can be tedious to do this for large trees.
+
+To use the `tree put` of `@oada/client`, let's first create a JSON tree that holds the structure and `content-types` for our API.  Every level that is supposed to be its own resource needs to have the `_type` specified:
+```javascript
+const tree = {
+  bookmarks: {
+    _type: "application/vnd.oada.bookmarks.1+json"
+    trellisfw: {
+      _type: "application/vnd.trellisfw.1+json"
+      asns: {
+        _type: "application/vnd.trellisfw.asns.1+json"
+        day-index: {
+          '*': {
+            _type: "application/vnd.trellisfw.asns.1+json",
+            '*': {
+              _type: "application/vnd.trellisfw.asn.porkhack.1+json"
+} } } } } } };
+```
+Note that every level is its own resource (i.e. has an `_type`) except `day-index`.  This means that when you GET `/bookmarks/trellisfw/asns`, the response will include every day that you have an ASN with a `shipdate` of that day.  Also, the `'*'` means that it will use the same types for each day.  The bottom level is the actual ASN's, for those we'll use `_type` `application/vnd.trellisfw.asn.porkhack.1+json`.
+
+Now, you'll want to `npm install @oada/client` and we can go ahead and POST our dummy ASN all in one go and it will ensure the path exists (assuming you have your domain, token, and that tree in variables):
+```
+import { connnect } from '@oada/client'
+
+(async () => {
+  const oada = await oada.connect({domain,token});
+  await oada.post({ 
+    path: "/bookmarks/trellisfw/asns/day-index/2021-03-15"
+    data: { shipdate: "2021-03-15" }
+    tree
+  });
+  await oada.disconnect();
+})()
+
+
 ### Streaming Live Changes
 
 The real power of Trellis comes in its ability to stream an ordered change feed from an arbitrary sub-tree of resources to any destination you want.  If you have a microservice or app, just set a watch on a resource via websockets.  If you want to async trigger an external REST service or serverless functions, simply set a webhook on a resource and it will call your API whenever the resource changes.
 
-To see how this looks, 
+To see how this works, first we can just look at what a `change` is.  To access the change which created a (i.e. turned it into `_rev` 1), you would GET `_meta/_changes/1`.  We can see this for our `asns` resource above with the following:
+```http
+GET /bookmarks/trellisfw/asns/_meta/_changes/1
+Host: localhost
+Authorization: Bearer <token>
+```
+Resources
+```json
+[
+  {
+    "resource_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE",
+    "path": "",
+    "body": {
+      "_type": "application/vnd.trellisfw.asns.1+json",
+      "_meta": {
+        "_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE/_meta",
+        "_type": "application/vnd.trellisfw.asns.1+json",
+        "_owner": "users/default:users_sam_321",
+        "stats": {
+          "createdBy": "users/default:users_sam_321",
+          "created": 1615854845.5
+        },
+        "modifiedBy": "users/default:users_sam_321",
+        "modified": 1615854845.5,
+        "_rev": 1
+      },
+      "_rev": 1
+    },
+    "type": "merge"
+  }
+]
+```
+
+This rev involved a single change (there is 1 thing in the array), it happened to the `resource_id` listed (our asns resource), that resource_id is at the end of your "watch" point (i.e. where you got `_meta/_changes/1` from), and you can see who modified it and when.
 
 
 
