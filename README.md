@@ -10,7 +10,7 @@
     3. [Hackathon Setup and Logistics](#hackathon-setup-and-logistics)  
 1. [Introduction to OADA and Trellis](#introduction-to-oada-and-trellis)
     1. [Installation and Setup](#installation-and-setup)
-    2. [Making API Requests By Hand](#making-api-requests-by-hand)
+    2. [Using the ASN API](#using-the-asn-api)
     3. [OADA Javascript Helper Libraries](#oada-javascript-helper-libraries)
 
 
@@ -138,9 +138,11 @@ oadadeploy admin token create -u bob -s all:all
 
 Armed with your new token, you are ready to start making REST requests against OADA with a REST client like [Insomnia](https://insomnia.rest/).
 
-## Making API requests by hand
+## Using the ASN API
 --------------------------------
+
 ### GET /bookmarks
+------------------
 In OADA, URL's act sort of like a filesystem of resources rooted at path `/bookmarks`.  Each user has their own bookmarks, and the token you pass determines which user your request is referencing.  Send a different user's token and you'll get a different `/bookmarks` resource.
 
 After install, your bookmarks is "empty":
@@ -164,6 +166,7 @@ Response:
 That tells you the bookmarks resource is JSON, it is of `content-type` `application/vnd.oada.bookmarks.1+json`, and it has a `_meta` document (i.e. another JSON document storing arbitrary data _about_ the resource).  The resource at `/bookmarks` has a "canonical" id of `resources/default:resources_bookmarks_321`.  Also, it is currently on its first revision `_rev: 1`.
 
 ### Setup the Advance Ship Notice base API
+------------------------------------------
 **Please note that this API is not set in stone and may not be the final API from the hackathon.**
 
 We will provide a script to initialize your installation to support the proposed ASN API at the start of the hackathon.  However, for the purposes of helping understand how the API works, we will build it by hand in this section.  
@@ -222,6 +225,7 @@ Authorization: Bearer <token>
 That's it!  Now we have an API for ASN's all set and ready to roll, and we know how to read, write, and link together resources.  If you do a `GET /bookmarks/trellisfw/asns`, now you'll get the empty resource that will hold the ASN's.
 
 ### Create an ASN
+-----------------
 
 For this tutorial, we'll assume an ASN looks like this for simplicity (obviously the real ASN's will have all kinds of other information):
 ```json
@@ -240,12 +244,12 @@ To use the `tree put` of `@oada/client`, let's first create a JSON tree that hol
 ```javascript
 const tree = {
   bookmarks: {
-    _type: "application/vnd.oada.bookmarks.1+json"
+    _type: "application/vnd.oada.bookmarks.1+json",
     trellisfw: {
-      _type: "application/vnd.trellisfw.1+json"
+      _type: "application/vnd.trellisfw.1+json",
       asns: {
-        _type: "application/vnd.trellisfw.asns.1+json"
-        day-index: {
+        _type: "application/vnd.trellisfw.asns.1+json",
+        'day-index': {
           '*': {
             _type: "application/vnd.trellisfw.asns.1+json",
             _rev: 0,
@@ -257,33 +261,32 @@ const tree = {
 Note that every level is its own resource (i.e. has an `_type`) except `day-index`.  This means that when you GET `/bookmarks/trellisfw/asns`, the response will include every day that you have an ASN with a `shipdate` of that day.  Also, the `'*'` means that it will use the same types for each day.  The bottom level is the actual ASN's, for those we'll use `_type` `application/vnd.trellisfw.asn.porkhack.1+json`.  We'll get into why the `_rev: 0` is in there when we discuss live streaming change feeds below.  For now, just make sure it's there.
 
 Now, you'll want to `npm install @oada/client` and we can go ahead and POST our dummy ASN all in one go and it will ensure the path exists (assuming you have your domain, token, and that tree in variables):
-```
-import { connnect } from '@oada/client'
+```javascript
+import { connect } from '@oada/client'
 
 (async () => {
-  const oada = await oada.connect({domain,token});
+  const oada = await connect({domain,token});
   const { headers } = await oada.post({ 
-    path: "/bookmarks/trellisfw/asns/day-index/2021-03-15"
+    path: "/bookmarks/trellisfw/asns/day-index/2021-03-15",
     data: { shipdate: "2021-03-15" }, // This is the ASN
     tree
   });
-  // The last part of the URL (after the last "/") is the new key that was created on the POST:
-  // /resources/abc123/def456 => def456 is the newly posted key
-  const new_key = headers['content-location'].replace(/^.*\/(.*)/, '$1');
-  console.log(`Created new ASN at /bookmarks/trellisfw/asns/day-index/2021-03-15/${new_key}`);
+  console.log(`Created new ASN with _id ${headers['content-location'].slice(1)}`);
   await oada.disconnect();
 })()
 ```
 
-And voila!  Now you have an ASN in your list, feel free to go look around your new API tree.
+And voila!  Now you have an ASN in your list, feel free to go look around your new API tree and see the ASN.
 
-### Streaming Live Changes
+### Changes
+---------------------------
 
-The real power of Trellis comes in its ability to stream an ordered change feed from an arbitrary sub-tree of resources to any destination you want.  If you have a microservice or app, just set a watch on a resource via websockets.  If you want to async trigger an external REST service or serverless functions, simply set a webhook on a resource and it will call your API whenever the resource changes.
+The real power of Trellis comes in its ability to stream an ordered change feed from an arbitrary sub-tree of resources to any destination you want.  If you have a microservice or app, just set a watch on a resource via websockets.  If you want to trigger an external REST service or serverless functions, simply set a webhook on a resource and it will call your API whenever the resource changes.
 
-To see how this works, first we can just look at what a `change` is.  To access the change which created a (i.e. turned it into `_rev` 1), you would GET `_meta/_changes/1`.  We can see this for our new asn above with the following:
+To see how this works, first we can just look at what a `change` is.  Let's look at the latest change to our ASN resource:
+
 ```http
-GET /bookmarks/trellisfw/asns/day-index/2021-03-15/<new_key>/_meta/_changes/1
+GET /bookmarks/trellisfw/asns/day-index/2021-03-15/1pp0dS2wxFgnYmcMW68pqLZLRFb/_meta/_changes/2
 Host: localhost
 Authorization: Bearer <token>
 ```
@@ -291,32 +294,154 @@ Resources
 ```json
 [
   {
-    "resource_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE",
+    "resource_id": "resources/1pp0dfopoHbTPeVlGj2GSFQpIpT",
     "path": "",
     "body": {
-      "_type": "application/vnd.trellisfw.asns.1+json",
+      "shipdate": "2021-03-15",
       "_meta": {
-        "_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE/_meta",
-        "_type": "application/vnd.trellisfw.asns.1+json",
-        "_owner": "users/default:users_sam_321",
-        "stats": {
-          "createdBy": "users/default:users_sam_321",
-          "created": 1615854845.5
-        },
         "modifiedBy": "users/default:users_sam_321",
-        "modified": 1615854845.5,
-        "_rev": 1
+        "modified": 1615864812.55,
+        "_rev": 2
       },
-      "_rev": 1
+      "_rev": 2
     },
     "type": "merge"
   }
 ]
 ```
 
-This rev involved a single change (there is 1 thing in the array), it happened to the `resource_id` listed (our asns resource), that resource_id is at the end of your "watch" point (i.e. where you got `_meta/_changes/1` from), and you can see who modified it and when.
+This rev involved a single change (there is 1 thing in the array), it happened to the `resource_id` listed (our asns resource), that resource_id is at the end of your "watch" point (i.e. where you got `_meta/_changes/1` from), and you can see who modified it and when.  Most importantly, if you strip out all the keys of `body` which start with an underscore `_`, you get the original PUT body:
+```json
+{
+  "shipdate": "2021-03-15"
+}
+```
 
+If you received this change, you would know that it changed (upserted) the shipdate key on this resource to be the value `2021-03-15`.  We call this an "idempotent merge", because if you applied this same change to the resource over and over, you'd still end up with the same resulting state.  This "idempotent merge" represents the change necessary to transition the resource from `_rev` 1 (its creation) to `_rev` 2 (insert of first data).  If you have a remote copy of this resource at `_rev` 1, just do the same merge to your copy and you get a matching `_rev` 2.
 
+### Change Trees and Versioned Links
+------------------------------------
+We have a problem: we indexed all our ASN's into `day-index` buckets, but we'd like to just set a `watch` on the whole ASN's list and get the changes streamed to us.  In other words, we know we want all ASN changes, regardless of which ASN they belong to, but in order to do that we'd need to set a separate "watch" on every ASN.
 
-## Making API requests in Javascript/Typescript
-------------------------------------------------
+OADA to the rescue.  We want to see a change on just the top-level `/bookmarks/trellisfw/asns` resource that contains the changes of any child ASN resources on down the tree.  Remember those `_rev: 0`'s we had in the tree earlier?  **Adding the `_rev` to the link makes it a _versioned link_**.  OADA fills in the value of the `_rev` as the latest known `_rev` on the linked resource.  Whenver the linked resource changes, it will eventually update the `_rev` on that link.  And here's the magic: since that link's content is actually part of the parent resource, OADA will also update the `_rev` on the parent since it's content changed.  This allows you to batch together child changes and listen for them at any arbitrary node in the tree.  All you need to do is make sure your links are versioned.
+
+Let's see this in action.  Since our links were already versioned when we created our ASN resource, we can just look at the change for the latest `_rev` on the `/bookmarks/trellisfw/asns` resource and we should see the underlying addition of the ASN!
+
+To figure out the "current" rev of the parent, do:
+```http
+GET /bookmarks/trellisfw/asns/_rev
+Host: localhost
+Authorization: Bearer <token>
+```
+Response
+```json
+7
+```
+(Note, my latest version is 7, but yours may be different.  Use yours in the subsequent calls)
+
+Now, let's look at the change document for verion 7:
+```http
+GET /bookmarks/trellisfw/asns/_meta/_changes/7
+Host: localhost
+Authorization: Bearer <token>
+```
+Response:
+```json
+[
+  {
+    "resource_id": "resources/1pnl9KMIw9Dbt9WgC5XHWQIikrE",
+    "path": "",
+    "body": {
+      "day-index": {
+        "2021-03-15": {
+          "_rev": 2
+        }
+      },
+      "_meta": {
+        "modifiedBy": "system/rev_graph_update",
+        "modified": 1615864812.593,
+        "_rev": 7
+      },
+      "_rev": 7
+    },
+    "type": "merge"
+  },
+  {
+    "resource_id": "resources/1pp0dfzhWGD8fsyiJp1JLiMsfHX",
+    "path": "/day-index/2021-03-15",
+    "body": {
+      "1pp0dS2wxFgnYmcMW68pqLZLRFb": {
+        "_rev": 2
+      },
+      "_meta": {
+        "modifiedBy": "system/rev_graph_update",
+        "modified": 1615864812.571,
+        "_rev": 2
+      },
+      "_rev": 2
+    },
+    "type": "merge"
+  },
+  {
+    "resource_id": "resources/1pp0dfopoHbTPeVlGj2GSFQpIpT",
+    "path": "/day-index/2021-03-15/1pp0dS2wxFgnYmcMW68pqLZLRFb",
+    "body": {
+      "shipdate": "2021-03-15",
+      "_meta": {
+        "modifiedBy": "users/default:users_sam_321",
+        "modified": 1615864812.55,
+        "_rev": 2
+      },
+      "_rev": 2
+    },
+    "type": "merge"
+  }
+]
+```
+Whoa, that's a lot.  Notice first that there are 3 items in the array: i.e. the move from `_rev` 6 to `_rev` 7 for this resource involved 3 separate underlying changes.  The "leaf" change (i.e. the original change down at the leaf node which is our newly-added ASN) is the last one. Notice it is the same as the one we looked at above, except that the `path` key is different.  In this case, it means "the path to this changed resource from the current 'root' resource is `/day-index/2021-03-15/1pp0dS2wxFgnYmcMW68pqLZLRFb`.  You can see the `shipdate` data in that change.
+
+The next one up is the change to path `/day-index/2021-03-15` which just updated the `_rev` on the versioned link in that day-index resource.  Finally, the top one is the "root" resource that you are "watching" for changes, and it is just an update to the `_rev` of the day-index resource.
+
+This makes it incredibly easy to react to changes of an arbitrarily complex API tree: just watch for changes, filter the change docs to the resources you care about using the paths, and then grab the underlying data that matters to you.
+
+### Watching for Changes
+------------------------
+Polling for changes like we did above works just fine, but it's not efficient.  You can actually ask OADA to just push you a stream of changes starting from a `_rev` of your choice on any resource you want.  You can ask it to do this via a websocket, or as a webhook.  You can even ask it to replay the change automatically at a remote OADA service as a sort of OADA-aware webhook (i.e. performing a one-way sync).
+
+To see this work, we'll just use your browser's console to open a websocket to your OADA server.  Note that you'll have to figure out how to get your browser to trust your self-signed `localhost` SSL certificate if you want to try this.  If you are using Chrome or Brave, this is harder than it used to be.  Go to (chrome://flags/#allow-insecure-localhost) (brave://flags/#allow-insecure-localhost) and check the box to allow your browser to accept the localhost cert.  Then, to make sure it works, go to this URL in your browser: (https://localhost/.well-known/oada-configuration).  If you see some JSON show up, you're all set.
+
+To open the websocket in your browser console and set the watch, just paste this into your browser console (**Replace &lt;token&gt; with your token**:
+```javascript
+var w = new WebSocket('wss://localhost');
+   w.onopen = function(evt) { console.log('open!!') };
+  w.onerror = function(evt) { console.log('ERROR! evt = ', evt); }
+w.onmessage = function(evt) { console.log('message! ', JSON.parse(evt.data)) };
+w.send(JSON.stringify({
+  requestId: '1',
+  method: 'watch',
+  headers: { authorization: 'Bearer <token>' },
+  path: '/bookmarks/trellisfw/asns',
+}));
+```
+Now, go ahead and re-run your javascript code from above to add another new ASN for today's day-index.  You'll see the change appear as it is pushed from your OADA service to your console.
+
+To set a watch in code using `@oada/client`, you can simply do:
+```javascript
+const oada = await connect({domain, token});
+const requestId = await oada.watch({
+  path: '/bookmarks/trellisfw/asns',
+  rev: 1, // optional, the _rev from which to resume the watch
+  watchCallback: d => {
+    console.log(d); // This runs on every change
+  },
+})
+To unwatch a resource, use the unwatch request with the returned `requestId` above:
+```javascript
+const response = await oada.unwatch(requestId);
+```
+
+That should be enough to get anyone started working with the OADA API for this hackathon.
+
+## What we are really making
+----------------------------
+Now that you are familiar with OADA, you can understand that using OADA as the underlying API framework means we can publish some **API trees** and set of **content-type schemas** for any data we think is relevant to this hackathon.  This will inherently define all the endpoints, how to discover if your user has them, how to use them, what they mean, how to keep your side up to date with the remote, and how to react to events.
