@@ -213,7 +213,7 @@ Status: 200 Ok
 Content-Location: "/resources/1pnoUVMJ7nsQpdmb91CcIG781sv"
 ```
 
-Now, we have a resource containing an `asns` key which links to our `asns` resource.  This means that you can append the key to the end of a URL that ends at this resource, and OADA will take you to the linked resource.  i.e. `/resources/1pnoUVMJ7nsQpdmb91CcIG781sv/asns` will go to the first resource we created.  **You can append any keys in a resource to the URL (nested keys joined with `/`) and get the value at that key.**. 
+Now, we have a resource containing an `asns` key which links to our `asns` resource.  This means that you can append the key to the end of a URL that ends at this resource, and OADA will take you to the linked resource.  i.e. `/resources/1pnoUVMJ7nsQpdmb91CcIG781sv/asns` will go to the first resource we created.  **You can append any keys in a resource to the URL (nested keys joined with `/`) and get the value at that key.**
 
 Finally, let's link the trellisfw resource into bookmarks to complete the setup.  We're going to switch from POST to PUT. **All writes to OADA deep merge the "body" of the request into the existing resource,** and increment the `_rev` on the resource.  In fact, a POST is actually just a PUT that appends a `ksuid` on the end of the URL.
 ```http
