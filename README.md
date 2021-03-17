@@ -315,7 +315,7 @@ Resources
 ]
 ```
 
-This rev involved a single change (there is 1 thing in the array), it happened to the `resource_id` listed (our asns resource), that resource_id is at the end of your "watch" point (i.e. where you got `_meta/_changes/1` from), and you can see who modified it and when.  Most importantly, if you strip out all the keys of `body` which start with an underscore `_`, you get the original PUT body:
+This rev involved a single change (there is 1 thing in the array), it happened to the `resource_id` listed (our asns resource), that resource_id is at the end of your "watch" point (i.e. where you got `_meta/_changes/2` from), and you can see who modified it and when.  Most importantly, if you strip out all the keys of `body` which start with an underscore `_`, you get the original PUT body:
 ```json
 {
   "shipdate": "2021-03-15"
