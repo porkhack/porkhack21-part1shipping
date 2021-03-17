@@ -137,7 +137,7 @@ Now in order to make requests against `oada`, you'll need a token, and to get a 
 ```bash
 # Add username bob on domain localhost as an admin (who can make other users)
 oadadeploy admin user add -u bob -p testpass1 -d localhost -a
-# Create a token w/ scope "all:all" (i.e. that can do anything bob can do
+# Create a token w/ scope "all:all" (i.e. that can do anything bob can do)
 oadadeploy admin token create -u bob -s all:all
 ```
 
