@@ -415,7 +415,7 @@ Polling for changes like we did above works just fine, but it's not efficient.  
 
 To see this work, we'll just use your browser's console to open a websocket to your OADA server.  Note that you'll have to figure out how to get your browser to trust your self-signed `localhost` SSL certificate if you want to try this.  If you are using Chrome or Brave, this is harder than it used to be.  Go to either chrome://flags/#allow-insecure-localhost or brave://flags/#allow-insecure-localhost and check the box to allow your browser to accept the localhost cert.  Then, to make sure it works, go to this URL in your browser: https://localhost/.well-known/oada-configuration.  If you see some JSON show up, you're all set.
 
-To open the websocket in your browser console and set the watch, just paste this into your browser console (**Replace &lt;token&gt; with your token**:
+To open the websocket in your browser console and set the watch, just paste this into your browser console (**Replace &lt;token&gt; with your token**):
 ```javascript
 var w = new WebSocket('wss://localhost');
    w.onopen = function(evt) { console.log('open!!') };
