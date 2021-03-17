@@ -75,7 +75,7 @@ This team will focus on integrating any of this process with existing apps or se
 
 ## Contingency Planning
 ------------------------------
-In order to maximize team independence and modularity, it is critical that the Sharing and Sync Team's work not hinder any of the other team's work.  Trellis has a convenient means of achieving this which allows us to have a Plan A (everything works as planned) and a Plan B (some things don't work) and Plan C (only one thing works).  In essence, all apps and services (except the sharing service) will see the same API regardless of which platform and which user they are operating as.  This will manifest itself as follows:
+In order to maximize team independence and modularity, it is critical that the Sharing and Sync Team's work not hinder any of the other teams' work.  Trellis has a convenient means of achieving this which allows us to have a Plan A (everything works as planned) and a Plan B (some things don't work) and Plan C (only one thing works).  In essence, all apps and services (except the sharing service) will see the same API regardless of which platform and which user they are operating as.  This will manifest itself as follows:
 
 ![Plan C](./docs/img/PlanC.png)
 Plan C is the simplest of all the plans.  Just write any app/service using the standardized ASN API and have them all use the same user/token.  If the sharing team isn't done yet, or they don't get done, this works regardless because everybody is editing the same resource(s) as the same user.
