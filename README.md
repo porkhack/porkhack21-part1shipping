@@ -120,28 +120,7 @@ Rather than provide an exhaustive narrative around learning all the features of 
 
 ## Installation and Setup
 ----------------------------
-If you want to run `oada` locally for development, you need `docker`, `docker-compose`, and a non-Windows OS (Mac or Linux) w/ `bash`.  Then do this:
-```bash
-# Get the deployment script
-mkdir oada && cd oada
-curl -OfsSL https://raw.githubusercontent.com/oada/oadadeploy/master/oadadeploy && chmod u+x oadadeploy
-# Install oada using defaults
-oadadeploy init -y
-source .oadadeploy/bash-completion
-# Tell oada to serve localhost
-oadadeploy domain add -y localhost
-```
-You can also deploy the same way in a cloud VM, however you'll need to use your own domain instead of `localhost` in the last command.
-
-Now in order to make requests against `oada`, you'll need a token, and to get a token you'll need a user:
-```bash
-# Add username bob on domain localhost as an admin (who can make other users)
-oadadeploy admin user add -u bob -p testpass1 -d localhost -a
-# Create a token w/ scope "all:all" (i.e. that can do anything bob can do)
-oadadeploy admin token create -u bob -s all:all
-```
-
-Armed with your new token, you are ready to start making REST requests against OADA with a REST client like [Insomnia](https://insomnia.rest/).
+If you want to run `oada` locally for development, you need `docker`, `docker-compose`, and a non-Windows OS (Mac or Linux).  Follow the instructions found at https://github.com/oada/server.  This will result in you having a running instance of OADA and a token you can use to make requests.
 
 ## Using the ASN API
 --------------------------------
